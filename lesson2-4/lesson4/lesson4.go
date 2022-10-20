@@ -201,6 +201,9 @@ func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Write([]byte("Вывод успешно произведён!"))
 }
 
+// Обращение//////////////////////////////////
+var appeal = (strings.ToLower("Мой бот"))
+
 func UpdateLoop() {
 	lastId := 0
 	for {
@@ -242,9 +245,7 @@ func Update(lastId int) int {
 			}
 
 		}
-		// Обращение//////////////////////////////////
-		var appeal = (strings.ToLower("Мой бот"))
-		// Обращение//////////////////////////////////
+
 		if strings.Contains(strings.ToLower(txt), appeal) {
 			// 1. Анекдот
 			if strings.Contains(strings.ToLower(txt), "расскажи анекдот") {
