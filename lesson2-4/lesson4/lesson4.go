@@ -19,14 +19,15 @@ const apiUrl = "https://api.telegram.org/" + "bot5623754964:AAGQ0ZOl4db56Itqked3
 func main() {
 	go UpdateLoop()
 	router := mux.NewRouter()
-	router.HandleFunc("/", IndexHandler)
+	router.HandleFunc("/api", IndexHandler)
+	router.PathPrefix("/").Handler(http.FileServer((http.Dir("./static/"))))
 	http.ListenAndServe("localhost:8000", router)
 }
 
 func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 	var R MainStru
 
-	Ping() /// - Ping()
+	Ping() /// - Страница посещена
 
 	resp, err := http.Get(apiUrl + "/getMe")
 
