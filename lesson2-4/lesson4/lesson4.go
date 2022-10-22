@@ -18,6 +18,7 @@ const apiUrl = "https://api.telegram.org/" + "bot5623754964:AAGQ0ZOl4db56Itqked3
 
 func main() {
 	go UpdateLoop()
+	go Ping() /// - Ping()
 	router := mux.NewRouter()
 	router.HandleFunc("/", IndexHandler)
 	http.ListenAndServe("localhost:8000", router)
@@ -39,7 +40,7 @@ func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 	}
 
-	R.Result.Abilities = append(R.Result.Abilities, "reacting to vommands")
+	R.Result.Abilities = append(R.Result.Abilities, "reacting to commands")
 
 	respReady, err := json.Marshal(R.Result)
 	if err != nil {
@@ -97,7 +98,6 @@ func Update(lastId int) int {
 			}
 
 		}
-
 		/////////////////////////// 22.10.22
 		if strings.Split(txt, ", ")[0] == appeal {
 
@@ -183,5 +183,18 @@ func ChangeName(lastId int, ev UpdateStruct, txt string) int {
 		return lastId
 	} else {
 		return ev.Id + 1
+	}
+}
+
+func Ping() {
+	txtmsg := SendMessage{
+		ChId: 690215801,
+		Text: "Страница посещена",
+	}
+
+	bytemsg, _ := json.Marshal(txtmsg)
+	_, err := http.Post(apiUrl+"/sendMessage", "application/json", bytes.NewReader(bytemsg))
+	if err != nil {
+		fmt.Println(err)
 	}
 }
