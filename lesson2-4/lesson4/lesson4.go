@@ -57,13 +57,13 @@ func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 // Обращение//////////////////////////////////
-var appeal = ("мой бот")
+var appeal = "мой бот"
 
 func UpdateLoop() {
 	lastId := 0
 	for {
 		lastId = Update(lastId)
-		time.Sleep(5 * time.Second)
+		time.Sleep(1 * time.Second)
 	}
 }
 
@@ -75,6 +75,7 @@ func Update(lastId int) int {
 	body, _ := io.ReadAll(raw.Body)
 
 	var v UpdateResponse
+	fmt.Println(string(body))
 	err = json.Unmarshal(body, &v)
 	if err != nil {
 		panic(err)
@@ -129,8 +130,9 @@ func Update(lastId int) int {
 
 func Anek(lastId int, ev UpdateStruct) int {
 	txtmsg := SendMessage{
-		ChId: ev.Message.Chat.Id,
-		Text: "When goods are getting damaged, are they becoming bads?",
+		ChId:                ev.Message.Chat.Id,
+		Text:                "When goods are getting damaged, are they becoming bads?",
+		Reply_To_Message_ID: ev.Message.Id,
 	}
 
 	bytemsg, _ := json.Marshal(txtmsg)
@@ -153,8 +155,9 @@ func RandGen(lastId int, ev UpdateStruct, txt string) int {
 	fmt.Println(s)
 	num := strconv.Itoa(rand.Intn(s))
 	txtmsg := SendMessage{
-		ChId: ev.Message.Chat.Id,
-		Text: "Сгенерированное число: " + num,
+		ChId:                ev.Message.Chat.Id,
+		Text:                "Сгенерированное число: " + num,
+		Reply_To_Message_ID: ev.Message.Id,
 	}
 
 	bytemsg, _ := json.Marshal(txtmsg)
@@ -173,8 +176,9 @@ func ChangeName(lastId int, ev UpdateStruct, txt string) int {
 	appeal = newap[1]
 	fmt.Println(appeal)
 	txtmsg := SendMessage{
-		ChId: ev.Message.Chat.Id,
-		Text: "Обращение изменено на: " + appeal,
+		ChId:                ev.Message.Chat.Id,
+		Text:                "Обращение изменено на: " + appeal,
+		Reply_To_Message_ID: ev.Message.Id,
 	}
 
 	bytemsg, _ := json.Marshal(txtmsg)
