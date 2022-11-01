@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -12,14 +13,24 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/mattn/go-sqlite3"
 )
 
 const apiUrl = "https://api.telegram.org/" + "bot5623754964:AAGQ0ZOl4db56Itqked3Im3SXTx19-Q03S0"
 
 func main() {
+	sql.Register("sqlite3_with_extensions",
+		&sqlite3.SQLiteDriver{
+			Extensions: []string{
+				"sqlite3_mod_regexp",
+			},
+		})
+
 	go UpdateLoop()
 	router := mux.NewRouter()
 	router.HandleFunc("/api", IndexHandler)
+	router.HandleFunc("/botname", NameHandler)
+	router.HandleFunc("/botid", IDHandler)
 	router.PathPrefix("/").Handler(http.FileServer((http.Dir("./static/"))))
 	http.ListenAndServe("localhost:8000", router)
 }
@@ -56,15 +67,55 @@ func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 	w.Write([]byte("Вывод успешно произведён!"))
 }
 
+func NameHandler(w http.ResponseWriter, _ *http.Request) {
+	w.Write([]byte(appeal))
+}
+
+func IDHandler(w http.ResponseWriter, _ *http.Request) {
+	w.Write([]byte(lastId))
+}
+
 // Обращение//////////////////////////////////
 var appeal = "мой бот"
 
 func UpdateLoop() {
-	lastId := 0
-	for {
-		lastId = Update(lastId)
-		time.Sleep(1 * time.Second)
-	}
+    db, err := sql.Open("sqlite3", "tgbot.db")
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close() //закрывает коннект при закрытии программы
+    lastId := -1
+    for {
+        newId := Update(lastId)
+        if lastId != newId {
+            lastId = newId
+            db.Exec(`UPDATE `) // новый lastid в таблицу bot_status
+        }
+        time.Sleep(50 * time.Millisecond)
+    }
+}
+func ChangeName(lastId int, ev UpdateStruct, txt string) int {
+    newap := strings.Split(txt, "измени обращение на: ")
+    appeal = newap[1]
+    fmt.Println(appeal)
+    db, err := sql.Open("sqlite3", "tgbot.db")
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close()   //закрывает коннект при закрытии программы или выходе из зоны видимости
+    db.Exec(`UPDATE `) // новое имя в таблицу bot_status
+    txtmsg := SendMessage{
+        ChId: ev.Message.Chat.Id,
+        Text: "Обращение изменено на: " + appeal,
+    }
+    bytemsg, _ := json.Marshal(txtmsg)
+    _, err = http.Post(apiUrl+"/sendMessage", "application/json", bytes.NewReader(bytemsg))
+    if err != nil {
+        fmt.Println(err)
+        return lastId
+    } else {
+        return ev.Id + 1
+    }
 }
 
 func Update(lastId int) int {
@@ -75,7 +126,7 @@ func Update(lastId int) int {
 	body, _ := io.ReadAll(raw.Body)
 
 	var v UpdateResponse
-	fmt.Println(string(body))
+	// fmt.Println(string(body))
 	err = json.Unmarshal(body, &v)
 	if err != nil {
 		panic(err)
@@ -162,27 +213,6 @@ func RandGen(lastId int, ev UpdateStruct, txt string) int {
 
 	bytemsg, _ := json.Marshal(txtmsg)
 	_, err = http.Post(apiUrl+"/sendMessage", "application/json", bytes.NewReader(bytemsg))
-
-	if err != nil {
-		fmt.Println(err)
-		return lastId
-	} else {
-		return ev.Id + 1
-	}
-}
-
-func ChangeName(lastId int, ev UpdateStruct, txt string) int {
-	newap := strings.Split(txt, "измени обращение на: ")
-	appeal = newap[1]
-	fmt.Println(appeal)
-	txtmsg := SendMessage{
-		ChId:                ev.Message.Chat.Id,
-		Text:                "Обращение изменено на: " + appeal,
-		Reply_To_Message_ID: ev.Message.Id,
-	}
-
-	bytemsg, _ := json.Marshal(txtmsg)
-	_, err := http.Post(apiUrl+"/sendMessage", "application/json", bytes.NewReader(bytemsg))
 
 	if err != nil {
 		fmt.Println(err)

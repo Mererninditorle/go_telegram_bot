@@ -36,7 +36,7 @@ type UpdateStruct struct {
 	Id               int     `json:"update_id"`
 	Message          Message `json:"message"`
 	EditedMessage    Message `json:"edited_message"`
-	ChannalPost      Message `json:"channa_lPost"`
+	ChanelPost       Message `json:"chanel_Post"`
 	EditedChanelPost Message `json:"edited_chanel_post"`
 }
 
