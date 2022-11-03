@@ -126,6 +126,10 @@ func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
 
 func AuthCheck(w http.ResponseWriter, _ *http.Request) {}
 
+func LogHandler() {}
+
+func RegHandler() {}
+
 // Обращение//////////////////////////////////
 var appeal = "мой бот"
 
