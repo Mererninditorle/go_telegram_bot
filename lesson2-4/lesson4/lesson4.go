@@ -30,7 +30,8 @@ func main() {
 	router := mux.NewRouter()
 	router.HandleFunc("/api", IndexHandler)
 	router.HandleFunc("/botname", NameHandler)
-	router.HandleFunc("/botid", IDHandler)
+	router.HandleFunc("/eventId", EvIdHandler)
+	router.HandleFunc("/lastId", LastIdHandler)
 	router.PathPrefix("/").Handler(http.FileServer((http.Dir("./static/"))))
 	http.ListenAndServe("localhost:8000", router)
 }
@@ -68,12 +69,62 @@ func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func NameHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Write([]byte(appeal))
+    db, err := sql.Open("sqlite3", "file:database.db")
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close()
+    var gotname string
+    var resp sql.NullString // для результата
+    err = db.QueryRow("SELECT name FROM bot_status").Scan(&resp)
+    if err != nil {
+        fmt.Println(err)
+    }
+    if resp.Valid { // если результат валид
+        gotname = resp.String // берём оттуда обычный string
+    }
+    w.Write([]byte(gotname))
 }
 
-func IDHandler(w http.ResponseWriter, _ *http.Request) {
-	w.Write([]byte(lastId))
+func EvIdHandler(w http.ResponseWriter, _ *http.Request) {
+	db, err := sql.Open("sqlite3", "db.sql")
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close()
+    var goteventid string
+    var resp sql.NullString // для результата
+    err = db.QueryRow("SELECT id FROM bot_status").Scan(&resp)
+    if err != nil {
+        fmt.Println(err)
+    }
+    if resp.Valid { // если результат валид
+        goteventid = resp.String // берём оттуда обычный string
+    }
+    w.Write([]byte(goteventid))
 }
+
+func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
+	db, err := sql.Open("sqlite3", "db.sql")
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close()
+    var gotlastid string
+    var resp sql.NullString // для результата
+    err = db.QueryRow("SELECT lastid FROM bot_status").Scan(&resp)
+    if err != nil {
+        fmt.Println(err)
+    }
+    if resp.Valid { // если результат валид
+        gotlastid = resp.String // берём оттуда обычный string
+    }
+    w.Write([]byte(gotlastid))
+}
+
+// func IDHandler(w http.ResponseWriter, _ *http.Request) {
+// 	w.Write([]byte(lastId))
+// }
 
 // Обращение//////////////////////////////////
 var appeal = "мой бот"
