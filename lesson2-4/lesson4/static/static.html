@@ -12,6 +12,8 @@
     <button id="eventId", onclick="getEventId()">Get current event Id</button>
     <button id="lastId", onclick="getLastId()">Get current last Id</button>
     <button id="clearer", onclick="clearArea()">Clear area</button>
+    <button id="log", onclick="GetLog()">Log in</button>
+    <button id="reg", onclick="GetReg()">Register</button>
     <script>
         function getName() {
             fetch("/botname").then(function(response) {
@@ -28,6 +30,14 @@
         function getLastId() {
             fetch('/lastId').then(response => { return response.text() })
                             .then(gotText => { document.getElementById("output").textContent += gotText + "\n" })
+        }
+
+        function GetLog() {
+            
+        }
+
+        function RegLog() {
+
         }
 
         function clearArea() {

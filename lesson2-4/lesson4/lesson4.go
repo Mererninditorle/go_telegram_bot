@@ -32,6 +32,8 @@ func main() {
 	router.HandleFunc("/botname", NameHandler)
 	router.HandleFunc("/eventId", EvIdHandler)
 	router.HandleFunc("/lastId", LastIdHandler)
+	router.HandleFunc("/login", LogHandler)
+	router.HandleFunc("/register", RegHandler)
 	router.PathPrefix("/").Handler(http.FileServer((http.Dir("./static/"))))
 	http.ListenAndServe("localhost:8000", router)
 }
@@ -122,9 +124,7 @@ func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
     w.Write([]byte(gotlastid))
 }
 
-// func IDHandler(w http.ResponseWriter, _ *http.Request) {
-// 	w.Write([]byte(lastId))
-// }
+func AuthCheck(w http.ResponseWriter, _ *http.Request) {}
 
 // Обращение//////////////////////////////////
 var appeal = "мой бот"
@@ -145,29 +145,7 @@ func UpdateLoop() {
         time.Sleep(50 * time.Millisecond)
     }
 }
-func ChangeName(lastId int, ev UpdateStruct, txt string) int {
-    newap := strings.Split(txt, "измени обращение на: ")
-    appeal = newap[1]
-    fmt.Println(appeal)
-    db, err := sql.Open("sqlite3", "tgbot.db")
-    if err != nil {
-        panic(err)
-    }
-    defer db.Close()   //закрывает коннект при закрытии программы или выходе из зоны видимости
-    db.Exec(`UPDATE `) // новое имя в таблицу bot_status
-    txtmsg := SendMessage{
-        ChId: ev.Message.Chat.Id,
-        Text: "Обращение изменено на: " + appeal,
-    }
-    bytemsg, _ := json.Marshal(txtmsg)
-    _, err = http.Post(apiUrl+"/sendMessage", "application/json", bytes.NewReader(bytemsg))
-    if err != nil {
-        fmt.Println(err)
-        return lastId
-    } else {
-        return ev.Id + 1
-    }
-}
+
 
 func Update(lastId int) int {
 	raw, err := http.Get(apiUrl + "/getUpdates?offset=" + strconv.Itoa(lastId))
@@ -271,6 +249,30 @@ func RandGen(lastId int, ev UpdateStruct, txt string) int {
 	} else {
 		return ev.Id + 1
 	}
+}
+
+func ChangeName(lastId int, ev UpdateStruct, txt string) int {
+    newap := strings.Split(txt, "измени обращение на: ")
+    appeal = newap[1]
+    fmt.Println(appeal)
+    db, err := sql.Open("sqlite3", "tgbot.db")
+    if err != nil {
+        panic(err)
+    }
+    defer db.Close()   //закрывает коннект при закрытии программы или выходе из зоны видимости
+    db.Exec(`UPDATE `) // новое имя в таблицу bot_status
+    txtmsg := SendMessage{
+        ChId: ev.Message.Chat.Id,
+        Text: "Обращение изменено на: " + appeal,
+    }
+    bytemsg, _ := json.Marshal(txtmsg)
+    _, err = http.Post(apiUrl+"/sendMessage", "application/json", bytes.NewReader(bytemsg))
+    if err != nil {
+        fmt.Println(err)
+        return lastId
+    } else {
+        return ev.Id + 1
+    }
 }
 
 func Ping() {
