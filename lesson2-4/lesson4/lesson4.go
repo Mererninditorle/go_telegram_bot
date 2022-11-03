@@ -32,8 +32,8 @@ func main() {
 	router.HandleFunc("/botname", NameHandler)
 	router.HandleFunc("/eventId", EvIdHandler)
 	router.HandleFunc("/lastId", LastIdHandler)
-	router.HandleFunc("/login", LogHandler)
-	router.HandleFunc("/register", RegHandler)
+	router.HandleFunc("/login", login)
+	router.HandleFunc("/register", register)
 	router.PathPrefix("/").Handler(http.FileServer((http.Dir("./static/"))))
 	http.ListenAndServe("localhost:8000", router)
 }
@@ -71,7 +71,7 @@ func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func NameHandler(w http.ResponseWriter, _ *http.Request) {
-    db, err := sql.Open("sqlite3", "file:database.db")
+    db, err := sql.Open("sqlite3", "tgbot.db")
     if err != nil {
         panic(err)
     }
@@ -89,7 +89,7 @@ func NameHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func EvIdHandler(w http.ResponseWriter, _ *http.Request) {
-	db, err := sql.Open("sqlite3", "db.sql")
+	db, err := sql.Open("sqlite3", "tgbot.db")
     if err != nil {
         panic(err)
     }
@@ -107,7 +107,7 @@ func EvIdHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
-	db, err := sql.Open("sqlite3", "db.sql")
+	db, err := sql.Open("sqlite3", "tgbot.db")
     if err != nil {
         panic(err)
     }
@@ -124,11 +124,11 @@ func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
     w.Write([]byte(gotlastid))
 }
 
-func AuthCheck(w http.ResponseWriter, _ *http.Request) {}
+// func AuthCheck(w http.ResponseWriter, _ *http.Request) {}
 
-func LogHandler() {}
+func login(w http.ResponseWriter, _ *http.Request) {}
 
-func RegHandler() {}
+func register(w http.ResponseWriter, _ *http.Request) {}
 
 // Обращение//////////////////////////////////
 var appeal = "мой бот"
