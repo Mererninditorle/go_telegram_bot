@@ -2,8 +2,10 @@ package main
 
 import (
 	"bytes"
+	"crypto/md5"
 	"database/sql"
 	"encoding/json"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"math/rand"
@@ -128,7 +130,7 @@ func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
 
 func login(w http.ResponseWriter, _ *http.Request) {}
 
-func register(w http.ResponseWriter, _ *http.Request) {
+func register(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := io.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
