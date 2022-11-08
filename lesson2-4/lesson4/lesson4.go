@@ -73,7 +73,7 @@ func IndexHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func NameHandler(w http.ResponseWriter, _ *http.Request) {
-    db, err := sql.Open("sqlite3", "tgbot.sql")
+    db, err := sql.Open("sqlite3", "file:tgbot.sql")
     if err != nil {
         panic(err)
     }
@@ -91,7 +91,7 @@ func NameHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func EvIdHandler(w http.ResponseWriter, _ *http.Request) {
-	db, err := sql.Open("sqlite3", "tgbot.sql")
+	db, err := sql.Open("sqlite3", "file:tgbot.sql")
     if err != nil {
         panic(err)
     }
@@ -109,7 +109,7 @@ func EvIdHandler(w http.ResponseWriter, _ *http.Request) {
 }
 
 func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
-	db, err := sql.Open("sqlite3", "tgbot.sql")
+	db, err := sql.Open("sqlite3", "file:tgbot.sql")
     if err != nil {
         panic(err)
     }
@@ -128,7 +128,52 @@ func LastIdHandler(w http.ResponseWriter, _ *http.Request) {
 
 // func AuthCheck(w http.ResponseWriter, _ *http.Request) {}
 
-func login(w http.ResponseWriter, _ *http.Request) {}
+func login(w http.ResponseWriter, r *http.Request) { // Тимонин Игоръ
+	reqBody, err := io.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("BAD REQUEST"))
+		return
+	}
+	var data UserLogin
+	err = json.Unmarshal(reqBody, &data)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("BAD REQUEST"))
+		return
+	}
+	// if data.Password != "" &&
+	db, err := sql.Open("sqlite3", "file:tgbot.sql")
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("INTERNAL DATABASE ERROR"))
+		return
+	}
+	defer db.Close()
+	var dbHashedPass string
+	err = db.QueryRow("SELECT password FROM admins WHERE username = ?", data.Username).Scan(&dbHashedPass)
+	if err != nil {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("USER NOT FOUND"))
+		return
+	}
+	hash := md5.Sum([]byte(data.Password))
+	hashString := hex.EncodeToString(hash[:])
+	if dbHashedPass == hashString {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("SUCCESSFUL LOGIN"))
+		return
+	} else {
+		fmt.Println(err)
+		w.WriteHeader(http.StatusConflict)
+		w.Write([]byte("INCORRECT PASSWORD"))
+		return
+	}
+}
 
 func register(w http.ResponseWriter, r *http.Request) {
 	reqBody, err := io.ReadAll(r.Body)
@@ -146,7 +191,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("BAD REQUEST"))
 	}
 
-	db, err := sql.Open("sqlite3", "tgbot.sql")
+	db, err := sql.Open("sqlite3", "file:tgbot.sql")
 	if err != nil {
 		fmt.Println(err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -183,7 +228,7 @@ func register(w http.ResponseWriter, r *http.Request) {
 var appeal = "мой бот"
 
 func UpdateLoop() {
-    db, err := sql.Open("sqlite3", "tgbot.sql")
+    db, err := sql.Open("sqlite3", "file:tgbot.sql")
     if err != nil {
         panic(err)
     }
@@ -307,12 +352,12 @@ func ChangeName(lastId int, ev UpdateStruct, txt string) int {
     newap := strings.Split(txt, "измени обращение на: ")
     appeal = newap[1]
     fmt.Println(appeal)
-    db, err := sql.Open("sqlite3", "tgbot.sql")
+    db, err := sql.Open("sqlite3", "file:tgbot.sql")
     if err != nil {
         panic(err)
     }
     defer db.Close()   //закрывает коннект при закрытии программы или выходе из зоны видимости
-    db.Exec(`UPDATE bot_status set lastid = $1`, lastId) // новое имя в таблицу bot_status
+    db.Exec(`UPDATE bot_status set name = $1`, appeal) // новое имя в таблицу bot_status
     txtmsg := SendMessage{
         ChId: ev.Message.Chat.Id,
         Text: "Обращение изменено на: " + appeal,

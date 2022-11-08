@@ -54,3 +54,8 @@ type Result struct {
 	Support    bool     `json:"supports_inline_queries"`
 	Abilities  []string `json:"abilities"`
 }
+
+type UserLogin struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
