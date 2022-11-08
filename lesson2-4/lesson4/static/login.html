@@ -58,8 +58,8 @@
         }
     function register() {
         let userData = {
-                username: document.getElementById("username"),
-                password: document.getElementById("password")
+                username: document.getElementById("username").value,
+                password: document.getElementById("password").value
             }
 
         json = JSON.stringify(userData)
